@@ -1,32 +1,67 @@
-import tkinter as tk
-from pynput import mouse
+import sys
 import threading
 import time
+from PyQt5 import QtWidgets, QtCore, QtGui
+from pynput import mouse
 
-root = tk.Tk()
-root.attributes("-topmost", True)   
-root.overrideredirect(True)        
-root.attributes("-fullscreen", True)  
-root.configure(bg="white")          
 
-canvas = tk.Canvas(root, bg="white", highlightthickness=0)
-canvas.pack(fill="both", expand=True)
+class Overlay(QtWidgets.QWidget):
+    showCircleSignal = QtCore.pyqtSignal(int, int, object)
 
-def show_circle(x, y):
-    r = 20  
-    circle = canvas.create_oval(x-r, y-r, x+r, y+r, outline="red", width=3)
+    def __init__(self):
+        super().__init__()
 
-    def remove_circle():
-        time.sleep(1)  
-        canvas.delete(circle)
+        
+        self.showCircleSignal.connect(self.show_circle)
 
-    threading.Thread(target=remove_circle, daemon=True).start()
+        # Fullscreen transparent overlay
+        self.setWindowFlags(
+            QtCore.Qt.FramelessWindowHint
+            | QtCore.Qt.WindowStaysOnTopHint
+            | QtCore.Qt.Tool
+        )
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.showFullScreen()
+
+        self.circles = []
+
+    def show_circle(self, x, y, color=QtCore.Qt.red):
+        circle = {"x": x, "y": y, "color": color}
+        self.circles.append(circle)
+        self.update()
+
+        def remove():
+            time.sleep(1)
+            if circle in self.circles:
+                self.circles.remove(circle)
+                self.update()
+
+        threading.Thread(target=remove, daemon=True).start()
+
+    def paintEvent(self, event):
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+
+        for c in self.circles:
+            pen = QtGui.QPen(QtGui.QColor(c["color"]))
+            pen.setWidth(4)
+            painter.setPen(pen)
+            painter.setBrush(QtCore.Qt.NoBrush)
+            painter.drawEllipse(QtCore.QPoint(c["x"], c["y"]), 20, 20)
+
 
 def on_click(x, y, button, pressed):
     if pressed:
-        root.after(0, show_circle, x, y)
+        color = QtCore.Qt.red if button == mouse.Button.left else QtCore.Qt.blue
+        
+        overlay.showCircleSignal.emit(x, y, color)
 
-listener = mouse.Listener(on_click=on_click)
-listener.start()
 
-root.mainloop()
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    overlay = Overlay()
+
+    listener = mouse.Listener(on_click=on_click)
+    listener.start()
+
+    sys.exit(app.exec_())
