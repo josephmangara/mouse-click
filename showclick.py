@@ -3,7 +3,7 @@ from tkinter import Tk, Toplevel, Canvas
 from pynput import mouse
 
 # circle parameters
-DIAMETER = 50
+DIAMETER = 40
 DURATION = 500  
 OUTLINE_WIDTH = 4
 
