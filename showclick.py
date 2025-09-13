@@ -45,7 +45,7 @@ class ClickOverlay:
         win.attributes("-topmost", True)
 
         # set initial transparency
-        win.attributes("-alpha", 0.9)
+        win.attributes("-alpha", 0.5)
 
         # window position
         win.geometry(f"{d}x{d}+{x - r}+{y - r}")
@@ -58,10 +58,10 @@ class ClickOverlay:
                       OUTLINE_WIDTH // 2,
                       d - OUTLINE_WIDTH // 2,
                       d - OUTLINE_WIDTH // 2,
-                      outline="cyan",
+                      outline="#ADD8E6",
                       width=OUTLINE_WIDTH)
 
-        # fade-out animation
+        # fade-out animation 
         self.fade_out(win, 0.9, steps=15)
 
     def fade_out(self, win, alpha, steps=15):
