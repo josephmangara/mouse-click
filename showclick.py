@@ -25,7 +25,7 @@ class ClickOverlay:
     def __init__(self, root):
         self.root = root
         self.root.withdraw()
-        self.poll_queue()  # start polling queue
+        self.poll_queue() 
 
     def poll_queue(self):
         try:
